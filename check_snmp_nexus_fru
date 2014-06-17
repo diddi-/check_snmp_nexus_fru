@@ -43,7 +43,8 @@ my $entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 my $fru;
 my $result;
 
-my @fru_status = (                                                                'OffEnvOther',
+my @fru_status = (                                              '',
+                'OffEnvOther',
                                                                 'On',
                                                                 'OffAdmin',
                                                                 'OffDenied',
