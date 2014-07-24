@@ -10,7 +10,8 @@
 use warnings;
 use strict;
 
-use Nagios::Plugin qw(STATUS_TEXT);
+use Nagios::Plugin;
+use Nagios::Plugin::Functions qw(%STATUS_TEXT);
 use Net::SNMP qw(:snmp);
 use POSIX;
 
@@ -33,7 +34,7 @@ $np->add_arg(
   spec => 'model|m=s',
   help => "-m, --model <model>. Set the device model to, \"nexus7000\" or \"nexus5000\".",
   required => 1,
-}
+);
 
 $np->getopts;
 
@@ -80,18 +81,18 @@ sub snmp_scan {
   my $result = undef;
 
   # Get all FRUs and their current states
-  $result = snmpbulk($np->opts->host, $np->opts->community, $oids{$np->opts->model->{operstate}});
+  $result = snmpbulk($np->opts->host, $np->opts->community, $oids{$np->opts->model}->{operstate});
   for my $oid (oid_lex_sort(keys %{$result})) {
     my $id = $1 if $oid =~ /\.([0-9]+)$/;
     $fru->{$id}->{'state'} = $fru_operstates[$result->{$oid}];
 
-    if($fru_states{$fru->{$id}->{'state'}} > $severity) {
-      $severity = $fru_states{$fru->{$id}->{'state'}};
+    if($fru_status{$fru->{$id}->{'state'}} > $severity) {
+      $severity = $fru_status{$fru->{$id}->{'state'}};
     }
   }
 
   # Get FRU descriptions for each FRU
-  $result = snmpbulk($np->opts->host, $np->opts->community, $oids{$np->opts->model->{physicaldescr}});
+  $result = snmpbulk($np->opts->host, $np->opts->community, $oids{$np->opts->model}->{physicaldescr});
   for my $oid (oid_lex_sort(keys %{$result})) {
     my $descr = $result->{$oid};
     my $id = $1 if $oid =~ /\.([0-9]+)$/;
@@ -108,7 +109,7 @@ sub print_status {
   foreach my $id (keys(%{$fru})) {
     my $state = $fru->{$id}->{'state'};
     my $status = $fru_status{$state};
-    printf("$format_string", $fru->{$id}{'description'}, $state, $STATUS_TEXT[$state]);
+    printf("$format_string", $fru->{$id}->{'description'}, $state, $STATUS_TEXT{$status});
   }
 
   return 0;
