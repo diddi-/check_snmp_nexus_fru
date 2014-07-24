@@ -96,8 +96,10 @@ sub snmp_scan {
   for my $oid (oid_lex_sort(keys %{$result})) {
     my $descr = $result->{$oid};
     my $id = $1 if $oid =~ /\.([0-9]+)$/;
-    $fru->{$id}->{'description'} = $descr if $fru->{$id};
-    $descr_length = length($descr) if length($descr) > $descr_length;
+    if($fru->{$id}) {
+      $fru->{$id}->{'description'} = $descr if $fru->{$id};
+      $descr_length = length($descr) if length($descr) > $descr_length;
+    }
   }
 
   return 0;
